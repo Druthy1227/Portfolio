@@ -57,26 +57,44 @@ if (sections.length > 0) {
 }
 
 /* -----------------------------------------------
-   FORMULÁRIO — FEEDBACK VISUAL  (index.html)
+   FORMULÁRIO — ENVIO REAL VIA FORMSPREE  (index.html)
+   Cadastre-se em https://formspree.io, crie um form e
+   substitua YOUR_FORM_ID pelo ID gerado (ex: xkgwpqzr).
    ----------------------------------------------- */
 const form    = document.getElementById('contactForm');
 const sendBtn = document.getElementById('sendBtn');
 const btnText = document.getElementById('btnText');
 
 if (form && sendBtn && btnText) {
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     btnText.textContent = 'ENVIANDO...';
     sendBtn.disabled = true;
 
-    setTimeout(() => {
-      btnText.textContent = '✓ ENVIADO!';
-      setTimeout(() => {
-        btnText.textContent = 'ENVIAR_MSG.sh';
-        sendBtn.disabled = false;
+    try {
+      const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (response.ok) {
+        btnText.textContent = '✓ ENVIADO!';
         form.reset();
-      }, 2500);
-    }, 1200);
+        setTimeout(() => {
+          btnText.textContent = 'ENVIAR_MSG.sh';
+          sendBtn.disabled = false;
+        }, 2500);
+      } else {
+        const json = await response.json().catch(() => ({}));
+        const msg  = json?.errors?.[0]?.message || 'Erro ao enviar.';
+        btnText.textContent = `✗ ${msg}`;
+        sendBtn.disabled = false;
+      }
+    } catch {
+      btnText.textContent = '✗ Sem conexão. Tente novamente.';
+      sendBtn.disabled = false;
+    }
   });
 }
 
