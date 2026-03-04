@@ -42,18 +42,41 @@ revealEls.forEach(el => revealObserver.observe(el));
 /* -----------------------------------------------
    NAV ACTIVE LINK NO SCROLL  (index.html)
    ----------------------------------------------- */
-const sections = document.querySelectorAll('section[id]');
+/* Apenas seções que possuem link correspondente no nav */
+const sections = Array.from(document.querySelectorAll('section[id]')).filter(
+  sec => document.querySelector(`.nav-links a[href="#${sec.id}"]`)
+);
 
 if (sections.length > 0) {
-  window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY + 120;
-    sections.forEach(sec => {
-      const link = document.querySelector(`.nav-links a[href="#${sec.id}"]`);
-      if (!link) return;
-      const inView = scrollY >= sec.offsetTop && scrollY < sec.offsetTop + sec.offsetHeight;
-      link.classList.toggle('active', inView);
+  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+
+  function updateActiveLink() {
+    const threshold = 160; // altura aproximada do header fixo + folga
+    let current = null;
+
+    /* Se chegou ao fim da página, força a última seção como ativa */
+    const nearBottom =
+      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+
+    if (nearBottom) {
+      current = sections[sections.length - 1];
+    } else {
+      sections.forEach(sec => {
+        if (sec.getBoundingClientRect().top <= threshold) {
+          current = sec;
+        }
+      });
+    }
+
+    navLinks.forEach(link => {
+      const isActive = current && link.getAttribute('href') === `#${current.id}`;
+      link.classList.toggle('active', !!isActive);
     });
-  }, { passive: true });
+  }
+
+  window.addEventListener('scroll', updateActiveLink, { passive: true });
+  /* Roda uma vez ao carregar para o caso de a página abrir com âncora */
+  updateActiveLink();
 }
 
 /* -----------------------------------------------
@@ -65,14 +88,80 @@ const form    = document.getElementById('contactForm');
 const sendBtn = document.getElementById('sendBtn');
 const btnText = document.getElementById('btnText');
 
+/* -- Helpers de validação de campo -- */
+function setFieldError(input, msg) {
+  input.classList.add('form-input--error');
+  let errEl = input.parentElement.querySelector('.form-error-msg');
+  if (!errEl) {
+    errEl = document.createElement('span');
+    errEl.className = 'form-error-msg';
+    errEl.setAttribute('aria-live', 'polite');
+    input.parentElement.appendChild(errEl);
+  }
+  errEl.textContent = msg;
+}
+
+function clearFieldError(input) {
+  input.classList.remove('form-input--error');
+  const errEl = input.parentElement.querySelector('.form-error-msg');
+  if (errEl) errEl.textContent = '';
+}
+
 if (form && sendBtn && btnText) {
+  const nameInput    = form.querySelector('#contactName');
+  const emailInput   = form.querySelector('#contactEmail');
+  const messageInput = form.querySelector('#contactMessage');
+  const emailRegex   = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  /* Limpa o erro em tempo real assim que o usuário corrigir o campo */
+  [nameInput, emailInput, messageInput].forEach(input => {
+    if (input) input.addEventListener('input', () => clearFieldError(input));
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    /* --- Valida todos os campos, acumula erros e foca o primeiro --- */
+    let firstInvalid = null;
+
+    if (nameInput) {
+      clearFieldError(nameInput);
+      if (!nameInput.value.trim()) {
+        setFieldError(nameInput, '// campo obrigatório');
+        firstInvalid = firstInvalid ?? nameInput;
+      }
+    }
+
+    if (emailInput) {
+      clearFieldError(emailInput);
+      const val = emailInput.value.trim();
+      if (!val) {
+        setFieldError(emailInput, '// campo obrigatório');
+        firstInvalid = firstInvalid ?? emailInput;
+      } else if (!emailRegex.test(val)) {
+        setFieldError(emailInput, '// formato inválido — ex: nome@dominio.com');
+        firstInvalid = firstInvalid ?? emailInput;
+      }
+    }
+
+    if (messageInput) {
+      clearFieldError(messageInput);
+      if (!messageInput.value.trim()) {
+        setFieldError(messageInput, '// campo obrigatório');
+        firstInvalid = firstInvalid ?? messageInput;
+      }
+    }
+
+    if (firstInvalid) {
+      firstInvalid.focus();
+      return;
+    }
+
     btnText.textContent = 'ENVIANDO...';
     sendBtn.disabled = true;
 
     try {
-      const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+      const response = await fetch('https://formspree.io/f/mykdrazg', {
         method: 'POST',
         body: new FormData(form),
         headers: { 'Accept': 'application/json' }

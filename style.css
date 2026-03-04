@@ -1,5 +1,5 @@
 /* ==============================================
-   style.css — Portfólio Luiz | "Deep Purple"
+   style.css — Portfólio Luiz Neves | "Deep Purple"
    Organização:
    01. Custom Properties (variáveis)
    02. Reset & Base
@@ -311,6 +311,11 @@ nav {
   text-shadow: var(--glow);
 }
 
+.hero-name-line {
+  display: block;
+  line-height: 0.95;
+}
+
 /* Título */
 .hero-title {
   font-family: var(--font-mono);
@@ -488,6 +493,111 @@ section {
 
 
 /* ==============================================
+   06b. BOTÃO CV — MODIFICADOR
+   ============================================== */
+.hero-cta--cv {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1.5px solid var(--accent-color);
+  /* sobrescreve o clip-path herdado de .hero-cta */
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+
+.hero-cta--cv:hover {
+  background: var(--accent-color);
+  color: #fff;
+  box-shadow: var(--glow);
+}
+
+
+/* ==============================================
+   06c. SEÇÃO: DESTAQUES ACADÊMICOS
+   ============================================== */
+#destaques {
+  background-color: var(--bg-primary);
+}
+
+.destaques-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.destaque-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-top: 3px solid var(--accent-color);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition),
+              transform var(--transition);
+}
+
+.destaque-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 80px;
+  height: 80px;
+  background: var(--accent-subtle);
+  border-radius: 50% 0 0 0;
+  pointer-events: none;
+}
+
+.destaque-card:hover {
+  border-color: var(--accent-color);
+  box-shadow: var(--glow);
+  transform: translateY(-3px);
+}
+
+.destaque-card-badge {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.destaque-card-content {
+  flex: 1;
+}
+
+.destaque-card-header {
+  margin-bottom: 0.85rem;
+}
+
+.destaque-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.4;
+  margin-bottom: 0.3rem;
+}
+
+.destaque-card-org {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  opacity: 0.85;
+}
+
+.destaque-card-year {
+  opacity: 0.65;
+}
+
+.destaque-card-desc {
+  font-size: 0.9rem;
+  opacity: 0.82;
+  line-height: 1.7;
+}
+
+
+/* ==============================================
    07. SEÇÃO: SOBRE MIM
    ============================================== */
 #sobre {
@@ -504,6 +614,12 @@ section {
   margin-bottom: 1rem;
   opacity: 0.85;
   font-size: 1rem;
+}
+
+.sobre-text strong {
+  color: #C084FC;
+  font-weight: 400;
+  opacity: 1;
 }
 
 .sobre-stats {
@@ -1111,6 +1227,21 @@ section {
   box-shadow: var(--glow);
 }
 
+/* Estado de erro */
+.form-input--error {
+  border-color: #e05555 !important;
+  box-shadow: 0 0 10px rgba(224, 85, 85, 0.35) !important;
+}
+
+.form-error-msg {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #e05555;
+  margin-top: 0.25rem;
+  letter-spacing: 0.5px;
+  min-height: 1em;
+}
+
 .form-textarea {
   min-height: 120px;
 }
@@ -1207,6 +1338,10 @@ footer span {
     flex-direction: row;
     justify-content: center;
     flex-wrap: wrap;
+  }
+
+  .destaques-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .skills-grid {
