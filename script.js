@@ -14,12 +14,17 @@ if (hamburger && navLinks) {
     const isOpen = navLinks.classList.toggle('open');
     hamburger.setAttribute('aria-expanded', isOpen);
     hamburger.setAttribute('aria-label', isOpen ? 'Fechar menu' : 'Abrir menu de navegação');
+    
+    // Trava ou destrava o scroll do body
+    document.body.style.overflow = isOpen ? 'hidden' : ''; 
   });
 
   navLinks.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       navLinks.classList.remove('open');
       hamburger.setAttribute('aria-expanded', 'false');
+      // Restaura o scroll ao clicar num link
+      document.body.style.overflow = ''; 
     });
   });
 }
@@ -55,8 +60,7 @@ if (sections.length > 0) {
     let current = null;
 
     /* Se chegou ao fim da página, força a última seção como ativa */
-    const nearBottom =
-      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+const nearBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 50;
 
     if (nearBottom) {
       current = sections[sections.length - 1];
@@ -77,114 +81,6 @@ if (sections.length > 0) {
   window.addEventListener('scroll', updateActiveLink, { passive: true });
   /* Roda uma vez ao carregar para o caso de a página abrir com âncora */
   updateActiveLink();
-}
-
-/* -----------------------------------------------
-   FORMULÁRIO — ENVIO REAL VIA FORMSPREE  (index.html)
-   Cadastre-se em https://formspree.io, crie um form e
-   substitua YOUR_FORM_ID pelo ID gerado (ex: xkgwpqzr).
-   ----------------------------------------------- */
-const form    = document.getElementById('contactForm');
-const sendBtn = document.getElementById('sendBtn');
-const btnText = document.getElementById('btnText');
-
-/* -- Helpers de validação de campo -- */
-function setFieldError(input, msg) {
-  input.classList.add('form-input--error');
-  let errEl = input.parentElement.querySelector('.form-error-msg');
-  if (!errEl) {
-    errEl = document.createElement('span');
-    errEl.className = 'form-error-msg';
-    errEl.setAttribute('aria-live', 'polite');
-    input.parentElement.appendChild(errEl);
-  }
-  errEl.textContent = msg;
-}
-
-function clearFieldError(input) {
-  input.classList.remove('form-input--error');
-  const errEl = input.parentElement.querySelector('.form-error-msg');
-  if (errEl) errEl.textContent = '';
-}
-
-if (form && sendBtn && btnText) {
-  const nameInput    = form.querySelector('#contactName');
-  const emailInput   = form.querySelector('#contactEmail');
-  const messageInput = form.querySelector('#contactMessage');
-  const emailRegex   = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  /* Limpa o erro em tempo real assim que o usuário corrigir o campo */
-  [nameInput, emailInput, messageInput].forEach(input => {
-    if (input) input.addEventListener('input', () => clearFieldError(input));
-  });
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    /* --- Valida todos os campos, acumula erros e foca o primeiro --- */
-    let firstInvalid = null;
-
-    if (nameInput) {
-      clearFieldError(nameInput);
-      if (!nameInput.value.trim()) {
-        setFieldError(nameInput, '// campo obrigatório');
-        firstInvalid = firstInvalid ?? nameInput;
-      }
-    }
-
-    if (emailInput) {
-      clearFieldError(emailInput);
-      const val = emailInput.value.trim();
-      if (!val) {
-        setFieldError(emailInput, '// campo obrigatório');
-        firstInvalid = firstInvalid ?? emailInput;
-      } else if (!emailRegex.test(val)) {
-        setFieldError(emailInput, '// formato inválido — ex: nome@dominio.com');
-        firstInvalid = firstInvalid ?? emailInput;
-      }
-    }
-
-    if (messageInput) {
-      clearFieldError(messageInput);
-      if (!messageInput.value.trim()) {
-        setFieldError(messageInput, '// campo obrigatório');
-        firstInvalid = firstInvalid ?? messageInput;
-      }
-    }
-
-    if (firstInvalid) {
-      firstInvalid.focus();
-      return;
-    }
-
-    btnText.textContent = 'ENVIANDO...';
-    sendBtn.disabled = true;
-
-    try {
-      const response = await fetch('https://formspree.io/f/mykdrazg', {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { 'Accept': 'application/json' }
-      });
-
-      if (response.ok) {
-        btnText.textContent = '✓ ENVIADO!';
-        form.reset();
-        setTimeout(() => {
-          btnText.textContent = 'ENVIAR_MSG.sh';
-          sendBtn.disabled = false;
-        }, 2500);
-      } else {
-        const json = await response.json().catch(() => ({}));
-        const msg  = json?.errors?.[0]?.message || 'Erro ao enviar.';
-        btnText.textContent = `✗ ${msg}`;
-        sendBtn.disabled = false;
-      }
-    } catch {
-      btnText.textContent = '✗ Sem conexão. Tente novamente.';
-      sendBtn.disabled = false;
-    }
-  });
 }
 
 /* -----------------------------------------------
